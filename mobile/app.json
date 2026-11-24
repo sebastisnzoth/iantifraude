@@ -57,7 +57,8 @@
           "cameraPermission": "Take a screenshot for analysis.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "./plugins/withPurchaseActivity"
     ],
     "experiments": {
       "typedRoutes": true

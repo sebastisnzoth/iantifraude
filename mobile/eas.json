@@ -1,1 +1,29 @@
-{"cli":{"version":">= 16.0.0"},"build":{"preview":{"distribution":"internal","android":{"buildType":"apk"}},"production":{"android":{"buildType":"app-bundle"}}}}
+{
+  "cli": {
+    "version": ">= 16.0.0"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "app-bundle"
+      }
+    },
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "ANTIGOLPE_RC_TEST": "1",
+        "ANTIGOLPE_RC_TEST_KEY": "test_hIqdnpaIPoCGwiIsyfACltzUayD"
+      }
+    }
+  }
+}

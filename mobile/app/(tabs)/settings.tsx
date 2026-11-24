@@ -6,6 +6,7 @@ import { useApp } from '../../src/AppContext';
 import { clearAllLocalData, DEFAULT_PREFS } from '../../src/storage';
 import type { Lang } from '../../src/engine';
 import { clearSession } from '../../src/session';
+import { premiumStrings } from '../../src/premium/strings';
 export default function Settings(){
  const {strings:s,theme,prefs,updatePrefs}=useApp(); const router=useRouter();
  const [confirming,setConfirming]=useState(false); const [notice,setNotice]=useState('');
@@ -16,7 +17,7 @@ export default function Settings(){
  <Card>{toggle(s.settingsDark,prefs.darkMode,v=>{save({darkMode:v});})}{toggle(s.settingsHistory,prefs.historyEnabled,v=>{save({historyEnabled:v});})}<Text style={{color:theme.muted}}>{s.settingsHistoryDesc}</Text></Card>
  <SectionTitle>{s.settingsAi}</SectionTitle><Card><Text style={{color:theme.text}}>{s.settingsAiLocal}</Text></Card>
  <PrimaryButton secondary title={s.settingsPrivacy} onPress={()=>router.push('/privacy')}/><PrimaryButton secondary title={s.settingsTerms} onPress={()=>router.push('/terms')}/><PrimaryButton secondary title={s.help} onPress={()=>router.push('/help')}/>
- <Card><Text style={{color:theme.text}}>{s.aboutBody}</Text></Card><SectionTitle>{s.settingsPremium}</SectionTitle><Card>{[s.planFree,s.planPremium,s.planFamily,s.planBusiness].map(x=><Text key={x} style={{color:theme.text,marginVertical:4}}>{x}</Text>)}</Card>
+ <Card><Text style={{color:theme.text}}>{s.aboutBody}</Text></Card><PrimaryButton secondary title={premiumStrings(prefs.language).title} onPress={()=>router.push('/premium')}/>
  {notice ? <Text accessibilityLiveRegion="polite" style={{color:theme.text,marginVertical:8}}>{notice}</Text> : null}
  {!confirming ? <PrimaryButton secondary title={s.settingsClear} onPress={()=>{setNotice('');setConfirming(true);}}/> : <Card>
  <Text style={{color:theme.text,fontSize:16}}>{s.confirmClear}</Text>
