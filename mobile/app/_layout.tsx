@@ -19,6 +19,7 @@ function RootStack() {
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="premium" options={{ title: 'AntiGolpe Pro' }} />
         <Stack.Screen name="result" options={{ title: 'AntiGolpe AI' }} />
         <Stack.Screen name="qr" options={{ title: 'QR' }} />
         <Stack.Screen name="ocr" options={{ title: 'OCR' }} />
