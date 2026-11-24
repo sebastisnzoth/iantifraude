@@ -1,0 +1,66 @@
+{
+  "expo": {
+    "name": "AntiGolpe AI",
+    "slug": "antigolpe-ai",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "antigolpe",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.antigolpe.ai",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Scan QR codes and take screenshots for local analysis.",
+        "NSPhotoLibraryUsageDescription": "Select screenshots for manual analysis."
+      }
+    },
+    "android": {
+      "package": "com.antigolpe.ai",
+      "adaptiveIcon": {
+        "backgroundColor": "#08765C",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#08765C"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow AntiGolpe AI to scan QR codes.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose a screenshot for analysis.",
+          "cameraPermission": "Take a screenshot for analysis.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
