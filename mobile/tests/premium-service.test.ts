@@ -44,3 +44,27 @@ test('paywall fails closed when default offering is missing',async()=>{
  mockSdk.getOfferings.mockResolvedValueOnce({all:{}} as never);
  await expect(presentPaywall()).rejects.toThrow('offering-unavailable');
 });
+
+test('an expired or absent entitlement does not grant access after purchase or restore', async()=>{
+ const inactive = {entitlements:{active:{}}};
+ mockSdk.purchasePackage.mockResolvedValueOnce({customerInfo:inactive} as never);
+ mockSdk.restorePurchases.mockResolvedValueOnce(inactive as never);
+ const pkg = (await loadPremium()).packages[0];
+ expect(isPro(await purchase(pkg))).toBe(false);
+ expect(isPro(await restore())).toBe(false);
+});
+test('cancelled purchases and network errors propagate without inventing success',async()=>{
+ const cancelled = {userCancelled:true};
+ mockSdk.purchasePackage.mockRejectedValueOnce(cancelled);
+ const pkg = (await loadPremium()).packages[0];
+ await expect(purchase(pkg)).rejects.toEqual(cancelled);
+ mockSdk.restorePurchases.mockRejectedValueOnce(new Error('offline'));
+ await expect(restore()).rejects.toThrow('offline');
+});
+test('paywall cancellation does not invent an active entitlement',async()=>{
+ mockUI.presentPaywall.mockResolvedValueOnce('CANCELLED');
+ mockSdk.getCustomerInfo.mockResolvedValueOnce({entitlements:{active:{}}} as never);
+ const result = await presentPaywall();
+ expect(result.result).toBe('CANCELLED');
+ expect(isPro(result.info)).toBe(false);
+});

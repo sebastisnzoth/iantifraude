@@ -44,3 +44,7 @@ Al recibir CustomerInfo o volver la app al primer plano se actualiza el estado s
 **Customer Center:** no está activado; la documentación consultada indica que requiere planes Pro o Enterprise de RevenueCat, incompatible con el presupuesto inicial de US$ 0 salvo que el proyecto ya disponga de acceso. La restauración básica está disponible en la pantalla propia sin asumir ese servicio. Consultar [Customer Center](https://www.revenuecat.com/docs/tools/customer-center) antes de habilitarlo.
 
 La preconfiguración nativa Android usa `singleTop` para evitar que un cambio de aplicación durante la compra la cancele. Se verificó el manifiesto generado por `expo prebuild` y el autolinking de los módulos en Android/iOS; esto **no** es una compilación ni una prueba de compra en un dispositivo. Ver también la [instalación React Native de RevenueCat](https://www.revenuecat.com/docs/getting-started/installation/reactnative).
+
+### Auditoría de dependencias (24 de noviembre de 2026)
+
+`npm audit` informó 22 vulnerabilidades moderadas, sin altas ni críticas. Con `npm audit --omit=dev` aparecen 3 moderadas: `expo` → `@expo/fingerprint` → `minimatch`, asociadas a [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249). Esto describe la resolución npm, no demuestra que el problema sea explotable desde la app. La solución automática sugerida para Expo supone cambiar de versión mayor; no se aplicó a ciegas porque podría romper la compatibilidad del SDK. Revisar versiones compatibles y volver a auditar antes de publicar.

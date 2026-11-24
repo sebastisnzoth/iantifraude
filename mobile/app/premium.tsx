@@ -17,6 +17,9 @@ export default function Premium() {
   const [notice, setNotice] = useState('');
   const lock = useRef(false);
   const mounted = useRef(true);
+  // Ignore stale foreground requests once a purchase, restore or listener has updated the state.
+  const infoVersion = useRef(0);
+  const updateStatus = (pro: boolean | null) => { infoVersion.current += 1; updateStatus(pro); };
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const run = useCallback(async (action: () => Promise<void>) => {
     if (lock.current) return;
@@ -30,9 +33,11 @@ export default function Premium() {
     await initialize();
     if (!mounted.current) return;
     setStarted(true);
+    const version = infoVersion.current;
     const result = await loadPremium();
     if (!mounted.current) return;
-    setStarted(true); setPackages(result.packages); setActive(isPro(result.info));
+    setStarted(true); setPackages(result.packages);
+    if (version === infoVersion.current) updateStatus(isPro(result.info));
     if (!result.packages.length) setNotice(s.missing);
     else if (result.packages.length < PACKAGE_IDS.length) setNotice(s.partial);
   });
@@ -43,13 +48,14 @@ export default function Premium() {
     const appState = AppState.addEventListener('change', state => {
       if (state !== 'active') return;
       // RevenueCat refreshes cached CustomerInfo as appropriate on foreground.
+      const version = infoVersion.current;
       initialize().then(sdk => sdk.getCustomerInfo()).then(info => {
-        if (!stop) setActive(isPro(info));
-      }).catch(() => { if (!stop) setActive(null); });
+        if (!stop && version === infoVersion.current) updateStatus(isPro(info));
+      }).catch(() => { if (!stop && version === infoVersion.current) updateStatus(null); });
     });
     initialize().then(sdk => {
       if (stop) return;
-      const listener = (info: Parameters<Parameters<typeof sdk.addCustomerInfoUpdateListener>[0]>[0]) => setActive(isPro(info));
+      const listener = (info: Parameters<Parameters<typeof sdk.addCustomerInfoUpdateListener>[0]>[0]) => updateStatus(isPro(info));
       sdk.addCustomerInfoUpdateListener(listener);
       unsubscribe = () => { sdk.removeCustomerInfoUpdateListener(listener); };
     }).catch(() => {});
@@ -71,13 +77,13 @@ export default function Premium() {
       const label = pkg.identifier === PACKAGE_IDS[0] ? s.monthly : pkg.identifier === PACKAGE_IDS[1] ? s.annual : s.lifetime;
       return <Card key={pkg.identifier}>
         <View style={{flexDirection:'row',justifyContent:'space-between',flexWrap:'wrap',gap:10}}><Text style={{color:theme.text,fontSize:18,fontWeight:'700'}}>{label}</Text><Text style={{color:theme.text,fontSize:18,fontWeight:'700'}}>{pkg.product.priceString}</Text></View>
-        {button(`${s.buy} · ${label}`, () => { void run(async () => { const info = await purchase(pkg); if (mounted.current) { const pro = isPro(info); setActive(pro); setNotice(pro ? s.activeDone : s.pending); } }); })}
+        {button(`${s.buy} · ${label}`, () => { void run(async () => { const info = await purchase(pkg); if (mounted.current) { const pro = isPro(info); updateStatus(pro); setNotice(pro ? s.activeDone : s.pending); } }); })}
       </Card>;
     })}
     {notice ? <Text accessibilityLiveRegion="polite" style={{color:theme.text,marginVertical:10}}>{notice}</Text> : null}
     {busy ? <Text accessibilityLiveRegion="polite" style={{color:theme.muted}}>{s.loading}</Text> : null}
     {button(started ? s.refresh : s.connect, load, true)}
-    {started && button(s.paywall, () => { void run(async () => { const outcome = await presentPaywall(); if (mounted.current) { const pro = isPro(outcome.info); setActive(pro); setNotice(outcome.result === 'CANCELLED' ? s.paywallClosed : pro ? s.activeDone : s.pending); } }); }, true)}
-    {started && button(s.restore, () => { void run(async () => { const info = await restore(); if (mounted.current) { const pro = isPro(info); setActive(pro); setNotice(pro ? s.activeDone : s.restored); } }); }, true)}
+    {started && button(s.paywall, () => { void run(async () => { const outcome = await presentPaywall(); if (mounted.current) { const pro = isPro(outcome.info); updateStatus(pro); setNotice(outcome.result === 'CANCELLED' ? s.paywallClosed : pro ? s.activeDone : s.pending); } }); }, true)}
+    {started && button(s.restore, () => { void run(async () => { const info = await restore(); if (mounted.current) { const pro = isPro(info); updateStatus(pro); setNotice(pro ? s.activeDone : s.restored); } }); }, true)}
   </ScrollView>;
 }
