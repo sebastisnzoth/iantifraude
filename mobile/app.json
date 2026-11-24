@@ -26,7 +26,8 @@
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "allowBackup": false
     },
     "web": {
       "bundler": "metro",
@@ -58,7 +59,21 @@
           "microphonePermission": false
         }
       ],
-      "./plugins/withPurchaseActivity"
+      "./plugins/withPurchaseActivity",
+      [
+        "expo-mlkit-ocr",
+        {
+          "iosEngine": "auto"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.4"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,6 +1,4 @@
 import * as Clipboard from 'expo-clipboard';
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Share, StyleSheet, Text } from 'react-native';
@@ -8,7 +6,8 @@ import { Card, PrimaryButton, RiskBadge, SectionTitle } from '../components/ui';
 import { useApp } from '../src/AppContext';
 import { CATEGORY_LABEL, RECOMMENDATION_TEXT, type AnalysisResult, type AnalysisType } from '../src/engine';
 import { activeProvider } from '../src/ai/provider';
-import { buildHtmlReport, buildTextReport } from '../src/report';
+import { buildTextReport } from '../src/report';
+import { exportPdf } from '../src/pdf';
 import { addHistory } from '../src/storage';
 import { clearSession, getAnalysis } from '../src/session';
 
@@ -60,10 +59,7 @@ export default function Result() {
   };
   const pdf = async () => {
     try {
-      const { uri } = await Print.printToFileAsync({ html: buildHtmlReport(result, lang) });
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
-      } else setNotice(s.pdfUnavailable);
+      await exportPdf(result, lang);
     } catch { setNotice(s.pdfUnavailable); }
   };
 
