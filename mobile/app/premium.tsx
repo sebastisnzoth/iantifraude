@@ -4,12 +4,13 @@ import type { PurchasesPackage } from 'react-native-purchases';
 import { Card } from '../components/ui';
 import { useApp } from '../src/AppContext';
 import { PACKAGE_IDS, isCancelled, isPro } from '../src/premium/core';
-import { initialize, loadPremium, purchase, restore, presentPaywall } from '../src/premium/service';
+import { getBillingMode, initialize, loadPremium, purchase, restore, presentPaywall } from '../src/premium/service';
 import { premiumStrings } from '../src/premium/strings';
 
 export default function Premium() {
   const { lang, theme } = useApp();
-  const s = premiumStrings(lang);
+  const mode = getBillingMode();
+  const s = premiumStrings(lang, mode);
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [active, setActive] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
@@ -19,7 +20,7 @@ export default function Premium() {
   const mounted = useRef(true);
   // Ignore stale foreground requests once a purchase, restore or listener has updated the state.
   const infoVersion = useRef(0);
-  const updateStatus = (pro: boolean | null) => { infoVersion.current += 1; updateStatus(pro); };
+  const updateStatus = useCallback((pro: boolean | null) => { infoVersion.current += 1; if (mounted.current) setActive(pro); }, []);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const run = useCallback(async (action: () => Promise<void>) => {
     if (lock.current) return;
@@ -60,7 +61,7 @@ export default function Premium() {
       unsubscribe = () => { sdk.removeCustomerInfoUpdateListener(listener); };
     }).catch(() => {});
     return () => { stop = true; unsubscribe?.(); appState.remove(); };
-  }, [started]);
+  }, [started, updateStatus]);
   const button = (title: string, onPress: () => void, secondary = false) => (
     <Pressable accessibilityRole="button" accessibilityState={{disabled: busy}} disabled={busy} onPress={onPress} style={{minHeight:52,justifyContent:'center',alignItems:'center',borderRadius:12,padding:12,marginVertical:6,backgroundColor:secondary ? theme.card : theme.primary,borderWidth:1,borderColor:theme.border,opacity:busy ? 0.5 : 1}}>
       <Text style={{color:secondary ? theme.text : '#fff',fontSize:16,fontWeight:'700',textAlign:'center'}}>{title}</Text>
@@ -82,7 +83,7 @@ export default function Premium() {
     })}
     {notice ? <Text accessibilityLiveRegion="polite" style={{color:theme.text,marginVertical:10}}>{notice}</Text> : null}
     {busy ? <Text accessibilityLiveRegion="polite" style={{color:theme.muted}}>{s.loading}</Text> : null}
-    {button(started ? s.refresh : s.connect, load, true)}
+    {mode !== 'unavailable' && button(started ? s.refresh : s.connect, load, true)}
     {started && button(s.paywall, () => { void run(async () => { const outcome = await presentPaywall(); if (mounted.current) { const pro = isPro(outcome.info); updateStatus(pro); setNotice(outcome.result === 'CANCELLED' ? s.paywallClosed : pro ? s.activeDone : s.pending); } }); }, true)}
     {started && button(s.restore, () => { void run(async () => { const info = await restore(); if (mounted.current) { const pro = isPro(info); updateStatus(pro); setNotice(pro ? s.activeDone : s.restored); } }); }, true)}
   </ScrollView>;
