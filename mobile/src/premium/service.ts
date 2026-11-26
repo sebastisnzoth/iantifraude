@@ -1,17 +1,18 @@
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 import type { CustomerInfo, PurchasesPackage } from 'react-native-purchases';
-import { OFFERING, selectedPackages } from './core';
+import { OFFERING, selectedPackages, selectBillingMode } from './core';
 
-// Only a development client with an explicitly configured public Test Store key
-// is allowed to initialize. Expo Go and web never use the native or mock SDK.
+// Keep SDK initialization behind the user's explicit Premium action.
+export function getBillingMode() {
+  return selectBillingMode(Platform.OS, __DEV__, Constants.executionEnvironment === ExecutionEnvironment.StoreClient, Constants.expoConfig?.extra);
+}
 let initialization: Promise<typeof import('react-native-purchases').default> | undefined;
 export function initialize() {
-  if (!__DEV__ || Platform.OS === 'web' || Constants.executionEnvironment === ExecutionEnvironment.StoreClient) {
-    return Promise.reject(new Error('unavailable'));
-  }
-  const key = Constants.expoConfig?.extra?.revenueCatTestKey;
-  if (typeof key !== 'string' || !key.startsWith('test_')) return Promise.reject(new Error('unavailable'));
+  const mode = getBillingMode();
+  const extra = Constants.expoConfig?.extra;
+  const key = mode === 'test' ? extra?.revenueCatTestKey : mode === 'play' ? extra?.revenueCatPlayKey : undefined;
+  if (typeof key !== 'string') return Promise.reject(new Error('unavailable'));
   if (!initialization) {
     initialization = Promise.resolve().then(() => {
       const Purchases = (require('react-native-purchases') as typeof import('react-native-purchases')).default;
@@ -39,7 +40,7 @@ export async function presentPaywall() {
   const sdk = await initialize();
   const offerings = await sdk.getOfferings();
   const offering = offerings.all[OFFERING];
-  if (!offering) throw new Error('offering-unavailable');
+  if (!offering || !selectedPackages(offering).length) throw new Error('offering-unavailable');
   const RevenueCatUI = (require('react-native-purchases-ui') as typeof import('react-native-purchases-ui')).default;
   const result = await RevenueCatUI.presentPaywall({ offering, displayCloseButton: true });
   // The paywall result alone does not grant access; always check CustomerInfo.
