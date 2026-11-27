@@ -73,6 +73,17 @@
             "deploymentTarget": "16.4"
           }
         }
+      ],
+      [
+        "expo-sharing",
+        {
+          "android": {
+            "enabled": true,
+            "singleShareMimeTypes": [
+              "text/plain"
+            ]
+          }
+        }
       ]
     ],
     "experiments": {
