@@ -1,12 +1,12 @@
 import type { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import { isPro, isCancelled, selectedPackages } from '../src/premium/core';
-const info = (active: object) => ({entitlements:{active}} as CustomerInfo);
+const info = (active: object) => ({requestDate:new Date().toISOString(),entitlements:{active,verification:'VERIFIED'}} as CustomerInfo);
 const pack = (identifier: string) => ({identifier,product:{priceString:'$12.34'}} as PurchasesPackage);
 test('only the active configured entitlement grants Pro', () => {
  expect(isPro(info({}))).toBe(false);
  expect(isPro(info({other:{isActive:true}}))).toBe(false);
  expect(isPro(info({antigolpe_pro:{isActive:false}}))).toBe(false);
- expect(isPro(info({antigolpe_pro:{isActive:true}}))).toBe(true);
+ expect(isPro(info({antigolpe_pro:{isActive:true,store:'PLAY_STORE',expirationDate:null}}))).toBe(true);
 });
 test('selects configured packages in order without invented prices', () => {
  const offering = {availablePackages:[pack('$rc_annual'),pack('other'),pack('$rc_monthly')]} as PurchasesOffering;

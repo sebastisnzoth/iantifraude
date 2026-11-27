@@ -1,3 +1,4 @@
+import { navigationLabels } from '../../src/navigationLabels';
 import * as Clipboard from 'expo-clipboard';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
@@ -9,7 +10,8 @@ import { useFocusEffect } from 'expo-router';
 import { setDraft } from '../../src/session';
 
 export default function Home() {
-  const { strings: s, theme, prefs } = useApp();
+  const { strings: s, theme, prefs, lang } = useApp();
+  const labels = navigationLabels[lang];
   const router = useRouter();
   const [recent, setRecent] = useState<HistoryEntry[]>([]);
   const [notice, setNotice] = useState('');
@@ -48,6 +50,13 @@ export default function Home() {
       <PrimaryButton title={s.scanQr} onPress={() => router.push('/qr')} />
       <PrimaryButton title={s.pasteClipboard} secondary onPress={paste} />
       {notice ? <Text style={[styles.notice, { color: theme.muted }]}>{notice}</Text> : null}
+
+      <SectionTitle>{labels.tools}</SectionTitle>
+      <Card>
+        {(['assistant', 'family', 'alerts'] as const).map(route => (
+          <PrimaryButton key={route} title={labels[route]} secondary onPress={() => router.push(`/${route}`)} />
+        ))}
+      </Card>
 
       {prefs.historyEnabled ? (
         <>

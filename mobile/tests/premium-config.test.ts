@@ -2,7 +2,7 @@ const config = require('../app.config.js');
 const original = {...process.env};
 afterEach(()=>{process.env = {...original};});
 test('production without test opt-in does not include the key',()=>{
- delete process.env.ANTIGOLPE_RC_TEST; process.env.EAS_BUILD_PROFILE='production';
+ process.env.ANTIGOLPE_RC_GOOGLE_KEY='goog_example'; delete process.env.ANTIGOLPE_RC_TEST; process.env.EAS_BUILD_PROFILE='production';
  expect(config({config:{extra:{}}}).extra.revenueCatTestKey).toBeUndefined();
 });
 test('production with test store enabled is rejected',()=>{

@@ -5,7 +5,9 @@ import { DEFAULT_PREFS, loadPrefs, savePrefs, type Prefs } from './storage';
 import { getTheme, type Theme } from './theme';
 import type { Lang } from './engine';
 
-interface AppState {
+import { usePremium } from './premium/usePremium';
+
+interface AppState extends ReturnType<typeof usePremium> {
   prefs: Prefs;
   lang: Lang;
   strings: ReturnType<typeof t>;
@@ -16,12 +18,14 @@ interface AppState {
 
 const Ctx = createContext<AppState>({
   prefs: DEFAULT_PREFS, lang: 'es', strings: t('es'), theme: getTheme(false),
+  proActive: false, proReady: false, updateCustomer: () => {},
   ready: false, updatePrefs: async () => {},
 });
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [ready, setReady] = useState(false);
+  const { proActive, proReady, updateCustomer } = usePremium(prefs.billingConsent, ready);
   const prefsRef = useRef(prefs);
   const saveQueue = useRef<Promise<void>>(Promise.resolve());
 
@@ -57,9 +61,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     lang: prefs.language,
     strings: t(prefs.language),
     theme: getTheme(prefs.darkMode),
-    ready,
+    ready, proActive, proReady, updateCustomer,
     updatePrefs,
-  }), [prefs, ready, updatePrefs]);
+  }), [prefs, ready, proActive, proReady, updateCustomer, updatePrefs]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

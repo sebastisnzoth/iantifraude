@@ -7,11 +7,17 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "ANTIGOLPE_RC_GOOGLE_KEY": "goog_JjWGkXuwtIFTcRUVNsmdkMFLaTm"
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "ANTIGOLPE_RC_GOOGLE_KEY": "goog_JjWGkXuwtIFTcRUVNsmdkMFLaTm"
       }
     },
     "development": {
