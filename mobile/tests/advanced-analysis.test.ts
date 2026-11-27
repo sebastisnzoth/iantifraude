@@ -8,7 +8,7 @@ test('ordinary loan discussion and an advance fee produce distinct results', () 
 });
 
 test('domain checks download a fixed feed once and never access the submitted website', async () => {
-  const download = jest.fn(async () => ({ok:true,headers:{ get: () => null },text: async () => 'listed.example\n'} as Response));
+  const download = jest.fn(async () => new Response('listed.example\n'));
   const lookup = createReputationLookup(download);
   const hosts = analysisHosts('https://sub.listed.example/secret?private=1', true);
   expect((await lookup(hosts)).listed).toEqual(['sub.listed.example']);
