@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "AntiGolpe AI",
-    "slug": "antigolpe-ai",
+    "slug": "antigolpe-ia",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -26,7 +26,9 @@
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "allowBackup": false,
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
@@ -58,10 +60,40 @@
           "microphonePermission": false
         }
       ],
-      "./plugins/withPurchaseActivity"
+      "./plugins/withPurchaseActivity",
+      [
+        "expo-mlkit-ocr",
+        {
+          "iosEngine": "auto"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.4"
+          }
+        }
+      ],
+      [
+        "expo-sharing",
+        {
+          "android": {
+            "enabled": true,
+            "singleShareMimeTypes": [
+              "text/plain"
+            ]
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "557575e4-444a-4fb3-95b8-d472d02abd77"
+      }
     }
   }
 }

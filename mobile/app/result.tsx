@@ -1,24 +1,45 @@
 import * as Clipboard from 'expo-clipboard';
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Share, StyleSheet, Text } from 'react-native';
 import { Card, PrimaryButton, RiskBadge, SectionTitle } from '../components/ui';
 import { useApp } from '../src/AppContext';
-import { CATEGORY_LABEL, RECOMMENDATION_TEXT, type AnalysisResult, type AnalysisType } from '../src/engine';
+import { CATEGORY_LABEL, RECOMMENDATION_TEXT, type AnalysisResult } from '../src/engine';
 import { activeProvider } from '../src/ai/provider';
-import { buildHtmlReport, buildTextReport } from '../src/report';
+import { buildTextReport } from '../src/report';
+import { financialSignals } from '../src/premium/financial';
+import { analysisHosts, checkReputation, type Reputation } from '../src/premium/reputation';
+import { detailStrings, reputationSummary, withProEvidence } from '../src/premium/analysisReport';
+import { exportPdf, printReport } from '../src/pdf';
 import { addHistory } from '../src/storage';
 import { clearSession, getAnalysis } from '../src/session';
 
 export default function Result() {
-  const { strings: s, theme, lang, prefs } = useApp();
+  const { strings: s, theme, lang, prefs, proActive } = useApp();
   const router = useRouter();
   const [analysis] = useState(getAnalysis);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [baseResult, setResult] = useState<AnalysisResult | null>(null);
   const [notice, setNotice] = useState('');
   const { text, type } = analysis;
+
+  const [date] = useState(() => new Date().toISOString());
+  const [reputation, setReputation] = useState<Reputation>();
+  const [checking, setChecking] = useState(false);
+  const [lookupFailed, setLookupFailed] = useState(false);
+  const labels = detailStrings[lang];
+  const hosts = useMemo(() => proActive ? analysisHosts(text, type === 'link') : [], [proActive, text, type]);
+  const details = useMemo(() => proActive ? { date, financial: financialSignals(text), reputation } : undefined,
+    [proActive, date, text, reputation]);
+  const result = useMemo(() => baseResult && withProEvidence(baseResult, details), [baseResult, details]);
+
+  async function lookup() {
+    if (!proActive || checking) return;
+    setChecking(true);
+    setLookupFailed(false);
+    try { setReputation(await checkReputation(hosts)); }
+    catch { setReputation(undefined); setLookupFailed(true); }
+    finally { setChecking(false); }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -48,7 +69,7 @@ export default function Result() {
     );
   }
 
-  const reportText = buildTextReport(result, lang, type);
+  const reportText = buildTextReport(result, lang, type, details);
   const copy = async () => {
     try { await Clipboard.setStringAsync(reportText); setNotice(s.copied); }
     catch { setNotice(s.shareUnavailable); }
@@ -60,10 +81,7 @@ export default function Result() {
   };
   const pdf = async () => {
     try {
-      const { uri } = await Print.printToFileAsync({ html: buildHtmlReport(result, lang) });
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
-      } else setNotice(s.pdfUnavailable);
+      await exportPdf(result, lang, undefined, details);
     } catch { setNotice(s.pdfUnavailable); }
   };
 
@@ -78,7 +96,7 @@ export default function Result() {
           <SectionTitle>{s.categoryTitle}</SectionTitle>
           <Card>
             <Text style={{ color: theme.text, fontWeight: '700' }}>
-              {result.category ? (CATEGORY_LABEL[result.category]?.[lang] ?? result.category) : '—'}
+              {result.category ? (CATEGORY_LABEL[result.category]?.[lang] ?? result.signals.find(sig => sig.category === result.category)?.label[lang] ?? '—') : '—'}
             </Text>
           </Card>
           <SectionTitle>{s.signalsTitle}</SectionTitle>
@@ -104,11 +122,21 @@ export default function Result() {
           </Card>
         </>
       )}
+      {proActive && hosts.length > 0 && <Card>
+        <SectionTitle>{labels.tools}</SectionTitle>
+        <Text style={{ color: theme.text }}>{labels.about}</Text>
+        <PrimaryButton secondary title={checking ? labels.checking : labels.check} onPress={lookup} />
+        {lookupFailed && <Text accessibilityLiveRegion="polite" style={{ color: theme.text }}>{labels.error}</Text>}
+        {reputation && <Text accessibilityLiveRegion="polite" style={{ color: theme.text }}>{reputationSummary(reputation, lang)}</Text>}
+      </Card>}
       <Text style={[styles.disclaimer, { color: theme.muted }]}>{s.disclaimer}</Text>
       {notice ? <Text style={{ color: theme.muted, textAlign: 'center' }}>{notice}</Text> : null}
       <PrimaryButton title={s.copyResult} onPress={copy} />
       <PrimaryButton title={s.shareReport} secondary onPress={share} />
       <PrimaryButton title={s.exportPdf} secondary onPress={pdf} />
+      {details && <PrimaryButton secondary title={labels.print} onPress={async () => {
+        try { await printReport(result, lang, details); } catch { setNotice(s.pdfUnavailable); }
+      }} />}
       <PrimaryButton title={s.newAnalysis} secondary onPress={() => { clearSession(); router.replace('/(tabs)/analyze'); }} />
     </ScrollView>
   );

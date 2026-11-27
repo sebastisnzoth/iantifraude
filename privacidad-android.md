@@ -1,13 +1,13 @@
 # Política de privacidad de AntiGolpe AI
 
-**Aplicación Android:** AntiGolpe AI (`com.antigolpe.ai`)  
-**Responsable:** Sergio Sebastian Taboda  
-**Contacto:** sebastianzoth@gmail.com  
-**Vigente desde el 26 de noviembre de 2026**
+**Aplicación Android:** AntiGolpe AI (`com.antigolpe.ai`)
+**Responsable:** Sergio Sebastian Taboda
+**Contacto:** sebastianzoth@gmail.com
+**Borrador para la versión candidata Android 2**
 
 ## Qué ocurre cuando analizás contenido
 
-Vos elegís qué mensaje, enlace, código QR o captura analizar. La app aplica reglas en tu teléfono. El texto, las imágenes y el contenido de los QR se procesan en el dispositivo. El análisis no abre los enlaces ni envía ese contenido a servidores del responsable o a servicios de inteligencia artificial. Podés usar el análisis sin crear una cuenta.
+Vos elegís qué mensaje, enlace, código QR o captura analizar. La app aplica reglas en tu teléfono. El texto, las imágenes y el contenido de los QR se procesan en el dispositivo. El análisis básico no abre enlaces. La consulta opcional de reputación descarga una lista pública de CERT Polska y compara los dominios en el teléfono. Podés usar el análisis sin crear una cuenta.
 
 ## Cámara, galería y portapapeles
 
@@ -23,7 +23,7 @@ Si elegís copiar un resultado, pasa al portapapeles. Si exportás un PDF, puede
 
 ## Servicios externos y compras
 
-Esta versión para Google Play no ofrece cobros reales. En las compilaciones de desarrollo que habilitan la tienda de prueba, consultar los planes puede transmitir a RevenueCat un identificador anónimo y datos de compras de prueba. RevenueCat no recibe los mensajes ni las imágenes que analizás. El borrado local no elimina los registros que ese proveedor pueda conservar. AntiGolpe AI no incorpora rastreadores publicitarios ni vende el contenido de los análisis.
+En el candidato de Google Play, al consultar los planes se comunica a RevenueCat un identificador de instalación y la información de compras para verificar los permisos. Google Play procesa el pago. Los perfiles familiares y números de confianza se guardan en el dispositivo hasta que los eliminás. Un asistente remoto opcional, cuando está configurado, solicita permiso para enviar cada mensaje a Cloudflare Workers AI. El servicio comprueba el acceso Pro con RevenueCat y mantiene contadores limitados de uso. En las compilaciones de desarrollo que habilitan la tienda de prueba, consultar los planes puede transmitir a RevenueCat un identificador anónimo y datos de compras de prueba. RevenueCat no recibe los mensajes ni las imágenes que analizás. El borrado local no elimina los registros que ese proveedor pueda conservar. AntiGolpe AI no incorpora rastreadores publicitarios ni vende el contenido de los análisis.
 
 ## Consultas de privacidad
 

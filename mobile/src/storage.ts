@@ -1,3 +1,4 @@
+import { clearFamily } from './family/store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AnalysisType, Lang, RiskLevel } from './engine';
 import { LIMITS } from './validation';
@@ -5,6 +6,7 @@ import { LIMITS } from './validation';
 export interface Prefs {
   language: Lang;
   darkMode: boolean;
+  billingConsent: boolean;
   historyEnabled: boolean;
   onboardingDone: boolean;
 }
@@ -23,6 +25,7 @@ const HISTORY_KEY = 'antigolpe:history';
 export const DEFAULT_PREFS: Prefs = {
   language: 'es',
   darkMode: false,
+  billingConsent: false,
   historyEnabled: false,
   onboardingDone: false,
 };
@@ -36,6 +39,7 @@ export async function loadPrefs(): Promise<Prefs> {
     return {
       language: ['es', 'pt', 'en'].includes(parsed.language as string) ? parsed.language as Lang : DEFAULT_PREFS.language,
       darkMode: parsed.darkMode === true,
+      billingConsent: parsed.billingConsent === true,
       historyEnabled: parsed.historyEnabled === true,
       onboardingDone: parsed.onboardingDone === true,
     };
@@ -101,6 +105,7 @@ export function clearHistory(): Promise<void> {
 }
 
 export async function clearAllLocalData(): Promise<void> {
+  await clearFamily();
   await AsyncStorage.removeItem(PREFS_KEY);
   await clearHistory();
 }

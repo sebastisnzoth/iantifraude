@@ -1,6 +1,6 @@
 import { initialize, loadPremium, purchase, restore, presentPaywall } from '../src/premium/service';
 import { isPro } from '../src/premium/core';
-const customer = {entitlements:{active:{antigolpe_pro:{isActive:true}}}};
+const customer = {requestDate:new Date().toISOString(),entitlements:{active:{antigolpe_pro:{isActive:true,expirationDate:null}}}};
 const mockSdk = {
  configure: jest.fn(),
  getOfferings: jest.fn(async()=>({all:{default:{availablePackages:[{identifier:'$rc_monthly', product:{priceString:'$1.00'}}]}}})),
@@ -18,8 +18,8 @@ test('initializes once, fetches real package data and handles purchase and resto
  expect(mockSdk.configure).toHaveBeenCalledWith({apiKey:'test_example'});
  const result = await loadPremium();
  expect(result.packages[0].product.priceString).toBe('$1.00');
- expect(isPro(await purchase(result.packages[0]))).toBe(true);
- expect(isPro(await restore())).toBe(true);
+ expect(isPro(await purchase(result.packages[0]),false)).toBe(true);
+ expect(isPro(await restore(),false)).toBe(true);
 });
 test('web never initializes even if a Test Store key is configured',async()=>{
  const { Platform } = require('react-native');
@@ -34,7 +34,7 @@ test('paywall uses the default offering and refreshes customer information', asy
  const value = await presentPaywall();
  expect(mockUI.presentPaywall).toHaveBeenCalledWith({offering: expect.objectContaining({availablePackages: expect.any(Array)}), displayCloseButton:true});
  expect(value.result).toBe('PURCHASED');
- expect(isPro(value.info)).toBe(true);
+ expect(isPro(value.info,false)).toBe(true);
 });
 test('paywall errors are not treated as a purchase',async()=>{
  mockUI.presentPaywall.mockResolvedValueOnce('ERROR');
@@ -51,7 +51,7 @@ test('an expired or absent entitlement does not grant access after purchase or r
  mockSdk.restorePurchases.mockResolvedValueOnce(inactive as never);
  const pkg = (await loadPremium()).packages[0];
  expect(isPro(await purchase(pkg))).toBe(false);
- expect(isPro(await restore())).toBe(false);
+ expect(isPro(await restore(),false)).toBe(false);
 });
 test('cancelled purchases and network errors propagate without inventing success',async()=>{
  const cancelled = {userCancelled:true};
