@@ -12,7 +12,10 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - run: npm audit --audit-level=high
       - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
   mobile:
     runs-on: ubuntu-latest
     defaults:
@@ -27,6 +30,8 @@ jobs:
           cache-dependency-path: mobile/package-lock.json
       - run: npm ci
       - run: npm test
+      - run: npm run lint
+      - run: npm audit --audit-level=high
       - run: npx tsc --noEmit
       - run: npx expo export --platform android --output-dir /tmp/antigolpe-android-bundle
         env:
